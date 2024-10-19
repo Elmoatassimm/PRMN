@@ -1,0 +1,11 @@
+{
+          "extends": "./tsconfig.json",
+          "compilerOptions": {
+              "target": "ESNext",
+              "module": "NodeNext",
+              "moduleResolution": "NodeNext",
+              "skipLibCheck": true,
+              "forceConsistentCasingInFileNames": true
+          }
+      }
+      

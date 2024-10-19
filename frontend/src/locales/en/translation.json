@@ -1,0 +1,67 @@
+{
+  "register": {
+    "register": "Register",
+    "title": "Register for an Account",
+    "description": "Please fill in the form below to create an account.",
+    "have_account": "Already have an account?",
+    "placeholder": {
+    "name": "Enter your name",
+    "email": "Enter your email",
+    "password": "Enter your password",
+    "confirm_password": "Confirm your password"
+  }
+  },
+
+  "select_language": "Select Language",
+  "name": "Name",
+  "email": "Email",
+  "password": "Password",
+  "confirm_password": "Confirm Password",
+  "enter_name": "Enter your name",
+  "enter_email": "Enter your email",
+  "enter_password": "Enter your password",
+  "confirm_password_placeholder": "Confirm your password",
+  "role": "Role",
+  "select_role": "Select your role",
+  "admin": "Admin",
+  "project_manager": "Project Manager",
+  "team_member": "Team Member",
+  "registering": "Registering...",
+  "login": "Login",
+  "network_error": "Network error. Please try again.",
+  "registration_failed": "Registration failed. Please try again.",
+  "login": {
+    "title": "Login",
+    "description": "Enter your email below to login to your account",
+    "email_label": "Email:",
+    "password_label": "Password:",
+    "email_placeholder": "Enter your email",
+    "password_placeholder": "Enter your password",
+    "loading": "Logging in...",
+    "submit": "Login",
+    "failed": "Login failed. Please try again.",
+    "network_error": "Network error. Please try again.",
+    "register_link": "Register",
+    "not_account": "Don't have an account? "
+  },
+
+  "header": {
+    "home": "Home",
+    "profile": "Profile",
+    "login": "Login",
+    "register": "Register"
+  },
+  "logout": {
+    "button": "Logout",
+    "success": "Logged out successfully!",
+    "failure": "Failed to log out. Please try again."
+  },
+  "home": {
+    "new_feature": "New Feature",
+    "title": "Manage Your Projects with Ease",
+    "description": "Our project management platform helps you streamline tasks, track progress, and collaborate efficiently with your team. Simplify workflows, manage deadlines, and achieve success with powerful features.",
+    "get_started": "Get Started",
+    "learn_more": "Learn More",
+    "image_alt": "Project management illustration"
+  }
+}

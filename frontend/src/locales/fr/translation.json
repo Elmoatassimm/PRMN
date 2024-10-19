@@ -1,0 +1,63 @@
+{
+  "register": {
+    "register": "S'inscrire",
+    "title": "Inscrivez-vous pour un compte",
+    "description": "Veuillez remplir le formulaire pour créer un compte.",
+    "have_account": "Vous avez déjà un compte ?"
+  },
+
+  "select_language": "Choisir la langue",
+
+  "name": "Nom",
+  "email": "E-mail",
+  "password": "Mot de passe",
+  "confirm_password": "Confirmer le mot de passe",
+  "enter_name": "Entrez votre nom",
+  "enter_email": "Entrez votre e-mail",
+  "enter_password": "Entrez votre mot de passe",
+  "confirm_password_placeholder": "Confirmez votre mot de passe",
+  "role": "Rôle",
+  "select_role": "Sélectionnez votre rôle",
+  "admin": "Administrateur",
+  "project_manager": "Chef de projet",
+  "team_member": "Membre de l'équipe",
+  "registering": "Inscription...",
+  "login": "Se connecter",
+  "network_error": "Erreur réseau. Veuillez réessayer.",
+  "registration_failed": "Échec de l'inscription. Veuillez réessayer.",
+
+  "login": {
+    "title": "Connexion",
+    "description": "Entrez votre email ci-dessous pour vous connecter à votre compte",
+    "email_label": "Email:",
+    "password_label": "Mot de passe:",
+    "email_placeholder": "Entrez votre email",
+    "password_placeholder": "Entrez votre mot de passe",
+    "loading": "Connexion en cours...",
+    "submit": "Se connecter",
+    "failed": "Échec de la connexion. Veuillez réessayer.",
+    "network_error": "Erreur réseau. Veuillez réessayer.",
+    "register_link": "S'inscrire",
+    "not_account": "Vous n'avez pas de compte ? "
+  },
+
+  "header": {
+    "home": "Accueil",
+    "profile": "Profil",
+    "login": "Connexion",
+    "register": "S'inscrire"
+  },
+  "logout": {
+    "button": "Déconnexion",
+    "success": "Déconnecté avec succès!",
+    "failure": "Échec de la déconnexion. Veuillez réessayer."
+  },
+  "home": {
+    "new_feature": "Nouvelle fonctionnalité",
+    "title": "Gérez vos projets facilement",
+    "description": "Notre plateforme de gestion de projet vous aide à rationaliser les tâches, à suivre les progrès et à collaborer efficacement avec votre équipe. Simplifiez les flux de travail, gérez les délais et réussissez grâce à des fonctionnalités puissantes.",
+    "get_started": "Commencer",
+    "learn_more": "En savoir plus",
+    "image_alt": "Illustration de gestion de projet"
+  }
+}
