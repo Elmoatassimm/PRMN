@@ -70,4 +70,30 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'user_id');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'user_id');
+    }
+
+    /**
+     * Get all tasks assigned to teams that this user belongs to.
+     * Retrieves tasks through team_tasks table.
+     */
+    public function tasks()
+    {
+              return $this->belongsToMany(Task::class, 'team_tasks', 'team_id', 'task_id')
+                        ->withTimestamps();
+    }
+    public function teams()
+          {
+                    return $this->belongsToMany(Team::class, 'user_teams', 'user_id', 'team_id')
+                              ->withTimestamps();
+          }
 }

@@ -1,8 +1,8 @@
 import React, { useReducer } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../provider/authProvider";
-import GoogleAuth from "../Componentssss/Auth/GoogleAuth";
-import InputError from "../Componentssss/InputErrors";
+import GoogleAuth from "../components/Auth/GoogleAuth";
+import InputError from "../components/InputErrors";
 import axiosInstance from "../axios";
 import { useTranslation } from "react-i18next";
 import { Button } from "../components/ui/button"; // Assuming you have a button component
@@ -16,7 +16,7 @@ const initialState = {
   email: "",
   password: "",
   confirmPassword: "",
-  role: "team_member", // Single role for radio buttons
+  role: "admin", // Single role for radio buttons
   errors: {},
   loading: false,
 };
@@ -52,15 +52,22 @@ const Register = () => {
     dispatch({ type: "SET_LOADING", loading: true });
 
     try {
-      const response = await axiosInstance.post(`/api/auth/register`, {
+      const response = await axiosInstance.post(`auth/register`, {
         name,
         email,
         password,
         password_confirmation: confirmPassword,
-        role, // Send the selected role
+        role,
       });
       setToken(response.data.data.access_token);
-      navigate("/dashboard", { replace: true });
+      // Navigate based on role
+      if (role === "admin") {
+        navigate("/createProject", { replace: true });
+      } else if (role === "team_member") {
+        navigate("/team-member-dashboard", { replace: true });
+      } else {
+        navigate("/createProject", { replace: true }); // Default for project_manager
+      }
     } catch (err) {
       if (err.response) {
         const { message, errors: validationErrors } = err.response.data;
@@ -105,6 +112,7 @@ const Register = () => {
           <div className="mb-2">
             <Label htmlFor="name">{t("name")}</Label>
             <Input
+            className="h-8"
               id="name"
               type="text"
               value={name}
@@ -115,6 +123,7 @@ const Register = () => {
                   value: e.target.value,
                 })
               }
+              placeholder="Enter your name"
               required
             />
             <InputError error={errors.name && errors.name[0]} />
@@ -123,6 +132,7 @@ const Register = () => {
           <div className="mb-2">
             <Label htmlFor="email">{t("email")}</Label>
             <Input
+            className="h-8"
               id="email"
               type="email"
               value={email}
@@ -133,6 +143,7 @@ const Register = () => {
                   value: e.target.value,
                 })
               }
+              placeholder="Enter your email"
               required
             />
             <InputError error={errors.email && errors.email[0]} />
@@ -141,6 +152,7 @@ const Register = () => {
           <div className="mb-2">
             <Label htmlFor="password">{t("password")}</Label>
             <Input
+            className="h-8"
               id="password"
               type="password"
               value={password}
@@ -151,6 +163,7 @@ const Register = () => {
                   value: e.target.value,
                 })
               }
+              placeholder="Enter your password"
               required
             />
             <InputError error={errors.password && errors.password[0]} />
@@ -159,6 +172,7 @@ const Register = () => {
           <div className="mb-2">
             <Label htmlFor="confirmPassword">{t("confirm_password")}</Label>
             <Input
+            className="h-8"
               id="confirmPassword"
               type="password"
               value={confirmPassword}
@@ -169,39 +183,13 @@ const Register = () => {
                   value: e.target.value,
                 })
               }
+              placeholder="Confirm your password"
               required
             />
           </div>
 
-          <div className="mb-2">
-            <Label>{t("role")}</Label>
-            <RadioGroup
-              value={role}
-              onValueChange={(value) => dispatch({ type: "SET_ROLE", role: value })}
-            >
-              <div className="flex flex-col">
-                <div className="flex items-center mb-2">
-                  <RadioGroupItem value="admin" id="admin" />
-                  <Label htmlFor="admin" className="ml-2">
-                    {t("admin")}
-                  </Label>
-                </div>
-                <div className="flex items-center mb-2">
-                  <RadioGroupItem value="project_manager" id="project_manager" />
-                  <Label htmlFor="project_manager" className="ml-2">
-                    {t("project_manager")}
-                  </Label>
-                </div>
-                <div className="flex items-center mb-2">
-                  <RadioGroupItem value="team_member" id="team_member" />
-                  <Label htmlFor="team_member" className="ml-2">
-                    {t("team_member")}
-                  </Label>
-                </div>
-              </div>
-            </RadioGroup>
-            <InputError error={errors.role && errors.role[0]} />
-          </div>
+        
+            
 
           <div className="flex justify-evenly items-center">
             <Button type="submit" disabled={loading} className="w-1/2 mx-1">
@@ -215,7 +203,7 @@ const Register = () => {
           
           <p className="text-sm mt-3"> {t("register.have_account")}
         <Link to="/login" className="underline mx-1">
-          {t("register.register")} {/* Translate link */}
+          {t("header.login")} {/* Translate link */}
         </Link></p>
           
         </form>

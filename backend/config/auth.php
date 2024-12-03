@@ -39,14 +39,16 @@ return [
         'api' => [
             'driver' => 'jwt',
             'provider' => 'users',
+            
         ],
-        
+
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
         ],
- 
         
+
+
     ],
 
     /*
@@ -71,6 +73,20 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
+/*
+        'admins' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Admin::class,
+        ],
+        
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => env('AUTH_MODEL', App\Models\ProjectManager::class),
+        ],
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => env('AUTH_MODEL', App\Models\TeamMember::class),
+        ],*/
 
         // 'users' => [
         //     'driver' => 'database',

@@ -19,7 +19,8 @@ class RegisterRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|confirmed|min:8',
-            'role' => 'required|in:admin,project_manager,team_member',
+            'role' => 'in:admin,project_manager,team_member',
+            'invite_token'=> 'string', 
         ];
     }
 

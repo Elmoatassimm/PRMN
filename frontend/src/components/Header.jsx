@@ -4,8 +4,8 @@ import Logout from "./Logout";
 import { useAuth } from "../provider/authProvider";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useTranslation } from "react-i18next";
-import { ModeToggle } from "../components/mode-toggle";
-import { Button } from "@/components/ui/button";
+import { ModeToggle } from "./mode-toggle";
+import { Button } from "./ui/button";
 import { Menu, X } from "lucide-react"; // Icons for mobile toggle
 
 const Header = () => {

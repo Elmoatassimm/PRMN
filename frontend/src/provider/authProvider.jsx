@@ -25,7 +25,7 @@ const AuthProvider = ({ children }) => {
     try {
       setRefreshing(true);
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/auth/refresh`
+        `${process.env.REACT_APP_API_URL}/api/v1/auth/refresh`
       );
       const newToken = response.data.data.access_token; // Adjusted to match your API response structure
       setToken(newToken);
@@ -39,9 +39,8 @@ const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setToken(null); // Clear the token
-   
   };
-
+/*
   useEffect(() => {
     let refreshTimer;
     if (token) {
@@ -55,7 +54,7 @@ const AuthProvider = ({ children }) => {
 
     return () => clearTimeout(refreshTimer);
   }, [token]);
-
+*/
   const contextValue = useMemo(
     () => ({
       token,

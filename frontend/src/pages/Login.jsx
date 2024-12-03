@@ -2,8 +2,8 @@ import React, { useReducer } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../provider/authProvider";
 import axios from "axios";
-import GoogleAuth from "../Componentssss/Auth/GoogleAuth";
-import InputError from "../Componentssss/InputErrors"; // Reuse InputError component
+import GoogleAuth from "../components/Auth/GoogleAuth";
+import InputError from "../components/InputErrors"; // Reuse InputError component
 import axiosInstance from "../axios";
 import { useTranslation } from "react-i18next";
 import { Button } from "../components/ui/button"; // Assuming you have a button component
@@ -51,12 +51,18 @@ const Login = () => {
 
     try {
       const response = await axiosInstance.post(
-        "/api/auth/login", // The base URL is already set in the axios instance
+        "auth/login", // The base URL is already set in the axios instance
         { email, password }
       );
       setToken(response.data.access_token);
       console.log("login success");
-      navigate("/dashboard", { replace: true });
+      
+      // Navigate based on user role
+      if (response.data.user.role === 'admin') {
+        navigate("/dashboard", { replace: true });
+      } else if (response.data.user.role === 'team_member') {
+        navigate("/team-member-dashboard", { replace: true });
+      }
     } catch (err) {
       if (err.response) {
         const { message, errors: validationErrors } = err.response.data;
@@ -79,9 +85,14 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLoginSuccess = () => {
+  const handleGoogleLoginSuccess = (response) => {
     console.log("Google login success");
-    navigate("/dashboard", { replace: true });
+    // Navigate based on user role from Google response
+    if (response.user.role === 'admin') {
+      navigate("/dashboard", { replace: true });
+    } else if (response.user.role === 'team_member') {
+      navigate("/team-member-dashboard", { replace: true });
+    }
   };
 
   const handleGoogleLoginError = (errorMessage) => {

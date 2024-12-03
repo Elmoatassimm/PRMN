@@ -7,27 +7,24 @@ use App\Http\Requests\GoogleAuthRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
-use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Str;
+use App\Services\StoreUserService;
 use App\Services\ResponseService;
+use App\Services\InvitationService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-
-use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Psr7\Request;
-use Illuminate\Http\JsonResponse;
-use Laravel\Socialite\Contracts\User as SocialiteUser;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
     protected $responseService;
+    protected $invitationService;
+    protected $storeUserService;
 
-    public function __construct(ResponseService $responseService)
+    public function __construct(ResponseService $responseService, InvitationService $invitationService, StoreUserService $storeUserService)
     {
         $this->responseService = $responseService;
+        $this->invitationService = $invitationService;
+        $this->storeUserService = $storeUserService;
         $locale = request()->get('lang', 'en');
         App::setLocale($locale);
     }
@@ -39,16 +36,53 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request)
     {
-        // Create a new user
-        $user = new User;
-        $user->name = $request->input('name');
-        $user->email = $request->input('email');
-        $user->password = bcrypt($request->input('password')); // Hash the password
-        $user->role = $request->input('role');
-        $user->save();
+        $token = $request->input('invite_token');
+        $roleData = $this->invitationService->determineRoleFromToken($token);
+
+        if (!$roleData['success']) {
+            return $this->responseService->error("invalid_or_expired_token", ["invalid_or_expired_token"], 400);
+        }
+
+        if ($roleData['role'] === 'admin') {
+            $userData = [
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'password' => $request->input('password'),
+                'role' => 'admin',
+            ];
+        } else {
+            // Create a new user using StoreUserService based on their role
+            $userData = [
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'password' => $request->input('password'),
+                'role' => $roleData['role'],
+                'invitable_id' => $roleData['invitation']['invitable_id'],
+                'invitable_type' => $roleData['invitation']['invitable_type'],
+                'invitation_id' => $roleData['invitation']['id'],
+            ];
+        }
+
+
+        // Call the corresponding store method based on the user role
+        $user = match ($roleData['role']) {
+            'admin' => $this->storeUserService->storeAdmin($userData),
+            'project_manager' => $this->storeUserService->storeProjectManager($userData),
+            'team_member' => $this->storeUserService->storeTeamMember($userData),
+            default => null,
+        };
+
+        if (!$user) {
+            return $this->responseService->error(trans('messages.user_registration_failed'), 400);
+        }
 
         // Generate a JWT token for the newly registered user
-        $token = auth()->login($user); // Assuming you're using the JWT Auth package
+        $token = auth()->login($user);
+
+        // Update the invitation status to 'Accepted' if a token was used
+        if ($roleData['invitation']) {
+            $roleData['invitation']->update(['status' => 'Accepted']);
+        }
 
         return $this->responseService->success(
             trans('messages.user_registered_successfully'),
@@ -57,13 +91,12 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
-                'access_token' => $token, // Include the token in the response
-                'token_type' => 'Bearer', // Specify the token type
+                'access_token' => $token,
+                'token_type' => 'Bearer',
             ],
             201
         );
     }
-
     /**
      * Get a JWT via given credentials.
      *
@@ -98,11 +131,7 @@ class AuthController extends Controller
         }
 
         // Handle login or registration
-        if ($authUser->exists) {
-            return $this->GoogleLogin($authUser);
-        } else {
-            return $this->GoogleRegister($validatedData);
-        }
+        return $authUser->exists ? $this.GoogleLogin($authUser) : $this.GoogleRegister($validatedData);
     }
 
     private function GoogleLogin(User $authUser)
@@ -119,70 +148,77 @@ class AuthController extends Controller
             return $this->responseService->error('Token generation failed', [], 500);
         }
 
-        return $this->responseService->success(trans('messages.login_successful'), [
-            'access_token' => $this->respondWithToken($token),
-        ]);
+        return $this->responseService->success(
+            trans('messages.login_successful'),
+
+            [
+                'user_id' => $authUser->id,
+                'name' => $authUser->name,
+                'email' => $authUser->email,
+                'role' => $authUser->role,
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+            ]
+        );
     }
 
     private function GoogleRegister(array $validatedData)
     {
-        // Create a new user
-        $authUser = new User();
-        $authUser->fill([
+        $token = request()->input('invite_token');
+        $roleData = $this->invitationService->determineRoleFromToken($token);
+
+        if (!$roleData['success']) {
+            return $this->responseService->error("invalid_or_expired_token", ["invalid_or_expired_token"], 400);
+        }
+
+        $userData = [
             'name' => $validatedData['name'],
             'google_id' => $validatedData['id'],
             'avatar' => $validatedData['avatar'],
             'email' => $validatedData['email'],
-            'role' => $validatedData['role'],
+            'password' => bcrypt(Str::random(16)), // Random password for Google Auth
             'email_verified_at' => now(),
-            'password' => bcrypt(Str::random(16)), // Generate a random password
-        ]);
+            'role' => $roleData['role'],
+            'invitable_id' => $roleData['invitation']['invitable_id'] ?? null,
+            'invitable_type' => $roleData['invitation']['invitable_type'] ?? null,
+            'invitation_id' => $roleData['invitation']['id'] ?? null,
+        ];
 
-        // Save the user
-        $authUser->save();
+        // Create user based on role
+        $authUser = match ($roleData['role']) {
+            'admin' => $this->storeUserService->storeAdmin($userData),
+            'project_manager' => $this->storeUserService->storeProjectManager($userData),
+            'team_member' => $this->storeUserService->storeTeamMember($userData),
+            default => null,
+        };
 
-        // Automatically log in the new user
+        if (!$authUser) {
+            return $this->responseService->error(trans('messages.user_registration_failed'), 400);
+        }
+
+        // Update invitation status if applicable
+        if ($roleData['invitation']) {
+            $roleData['invitation']->update(['status' => 'Accepted']);
+        }
+
+        // Log in the new user and generate token
         $token = auth()->login($authUser);
 
         if (!$token) {
             return $this->responseService->error('Token generation failed', [], 500);
         }
 
-        return $this->responseService->success(trans('messages.registration_successful'), [
-            'access_token' => $this->respondWithToken($token),
-        ]);
-    }
-
-
-    /**
-     * Assign or Update Role for the Authenticated User.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function assignRoleToAuthUser()
-    {
-        $validator = Validator::make(request()->all(), [
-            'role' => 'required|in:admin,project_manager,team_member'
-        ]);
-
-        if ($validator->fails()) {
-            return $this->responseService->validationFailed($validator->errors()->toArray());
-        }
-
-        $authUser = auth()->user();
-
-        if (!$authUser) {
-            return $this->responseService->error(trans('messages.user_not_authenticated'), [], 401);
-        }
-
-        $authUser->role = request()->input('role');
-        $authUser->save();
-
-        return $this->responseService->success(trans('messages.role_assigned_successfully'), [
-            'user_id' => $authUser->id,
-            'name' => $authUser->name,
-            'role' => $authUser->role,
-        ]);
+        return $this->responseService->success(
+            trans('messages.registration_successful'),
+            [
+                'user_id' => $authUser->id,
+                'name' => $authUser->name,
+                'email' => $authUser->email,
+                'role' => $authUser->role,
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+            ]
+        );
     }
 
     /**
@@ -232,6 +268,7 @@ class AuthController extends Controller
     protected function respondWithToken($token, $message = null)
     {
         $response = [
+            'user' => auth()->user(),
             'success' => true,
             'access_token' => $token,
             'token_type' => 'bearer',
@@ -244,10 +281,4 @@ class AuthController extends Controller
 
         return $response; // Return the array instead of a JSON response
     }
-
-    /**
-     * Redirect to Google for authentication.
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
 }

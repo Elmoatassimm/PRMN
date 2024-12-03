@@ -11,4 +11,11 @@ return [
     'user_retrieved_successfully' => 'تم استرداد المستخدم بنجاح.',
     'logged_out_successfully' => 'تم تسجيل الخروج بنجاح.',
     'token_refreshed_successfully' => 'تم تحديث الرمز بنجاح.',
+    
+    'created' => 'تم إنشاء بنجاح',
+    'not_found' => ' غير موجود',
+    'retrieved' => 'تم استرجاع بنجاح',
+    'updated' => 'تم تحديث بنجاح',
+    'deleted' => 'تم حذف بنجاح',
+    'unauthorized' => 'غير مصرح',
 ];

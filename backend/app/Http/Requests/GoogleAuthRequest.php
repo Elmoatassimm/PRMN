@@ -21,7 +21,8 @@ class GoogleAuthRequest extends FormRequest
             'id' => 'required|string', // Google ID
             'avatar' => 'nullable|string',
             'role' => 'in:admin,project_manager,team_member', // Role is now required
-            'token' => 'required|string', // Google token for verification
+            'token' => 'required|string',
+            'invite_token'=> 'string', // Google token for verification
         ];
     }
 
@@ -37,6 +38,8 @@ class GoogleAuthRequest extends FormRequest
             'token.required' => trans('messages.token_required'),
         ];
     }
+
+    
 
     protected function passedValidation()
     {

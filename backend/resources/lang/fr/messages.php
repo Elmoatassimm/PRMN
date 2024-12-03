@@ -11,4 +11,11 @@ return [
     'user_retrieved_successfully' => 'Utilisateur récupéré avec succès.',
     'logged_out_successfully' => 'Déconnexion réussie.',
     'token_refreshed_successfully' => 'Jeton actualisé avec succès.',
+
+    'created' => 'créé avec succès',
+    'not_found' => 'non trouvé',
+    'retrieved' => 'récupéré avec succès',
+    'updated' => 'mis à jour avec succès',
+    'deleted' => 'supprimé avec succès',
+    'unauthorized' => 'Non autorisé',
 ];

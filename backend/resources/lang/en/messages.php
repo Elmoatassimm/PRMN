@@ -11,4 +11,11 @@ return [
     'user_retrieved_successfully' => 'User retrieved successfully.',
     'logged_out_successfully' => 'Logged out successfully.',
     'token_refreshed_successfully' => 'Token refreshed successfully.',
+
+    'created' => 'created successfully',
+    'not_found' => 'not found',
+    'retrieved' => 'retrieved successfully',
+    'updated' => 'updated successfully',
+    'deleted' => 'deleted successfully',
+    'unauthorized' => 'Unauthorized',
 ];

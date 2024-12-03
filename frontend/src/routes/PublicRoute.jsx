@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../provider/authProvider";
-import Header from "../Componentssss/Header";
+import Header from "../components/Header";
 const PublicRoute = () => {
   const { token } = useAuth();
 

@@ -12,7 +12,7 @@ const Logout = () => {
   const handleLogout = async () => {
     try {
       await axiosInstance.post(
-        "/api/auth/logout",
+        "auth/logout",
         {},
         {
           headers: {

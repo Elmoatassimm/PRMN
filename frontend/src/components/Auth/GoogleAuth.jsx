@@ -39,11 +39,11 @@ const GoogleAuth = ({ onLoginSuccess, onLoginError, selectedRole }) => {
        };
 
       const response = await axiosInstance.post(
-        "/api/auth/google-auth",
+        "auth/google-auth",
         userData
       );
 
-      setToken(response.data.data.access_token.access_token); // Adjust based on your actual token structure
+      setToken(response.data.data.access_token); // Adjust based on your actual token structure
       setResponseMessage(response.data.message);
       onLoginSuccess();
 
