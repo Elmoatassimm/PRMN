@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\API\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
@@ -24,33 +23,31 @@ class ProjectController extends Controller
 
     public function index()
     {
-        $userId = auth()->id();
-        $projects = Project::whereHas('users', function ($query) use ($userId) {
-            $query->where('user_id', $userId);
-        })
-            ->orWhere('created_by', $userId)
-            ->with(['teams', 'users','tasks'])
+        $user = auth()->user();
+    
+        $projects = $user->projects()
+            ->with(['teams', 'users', 'tasks'])
+            ->orWhere('created_by', $user->id)
             ->get()
-            ->filter(function ($project) {
-                return auth()->user()->can('view', $project);
-            })
+            ->filter(fn($project) => $user->can('view', $project))
             ->values();
-
+    
         return $this->responseService->success(trans('messages.retrieved'), ['data' => $projects]);
     }
+    
 
     public function store(StoreProjectRequest $request)
     {
 
 
-        $userId = auth()->id();
+        $user = auth()->user();
 
-        $project = Project::create(array_merge($request->validated(), ['created_by' => $userId]));
+        $project = Project::create(array_merge($request->validated(), ['created_by' => $user->id]));
 
         ProjectUser::create([
-            'user_id' => $userId,
+            'user_id' => $user->id,
             'project_id' => $project->id,
-            'role_in_project' => 'admin',
+            'role_in_project' => $user->role,
         ]);
 
         return $this->responseService->success(trans('messages.created'), ['project' => $project], 201);
@@ -60,30 +57,19 @@ class ProjectController extends Controller
     {
         $project = Project::with(['teams', 'users', 'tasks', 'comments'])->find($id);
 
-        if (!$project) {
-            return $this->responseService->error(trans('messages.not_found'), [], 404);
-        }
-
-        // Check permission to view the specific project
-        if (!auth()->user()->can('view', $project)) {
-            return $this->responseService->error(trans('messages.unauthorized'), ['Unauthorized'], 403);
-        }
+        if (!auth()->user()->can('view', $project)) 
+           // return $this->responseService->error(trans('messages.unauthorized'), [], 403);
 
         return $this->responseService->success(trans('messages.retrieved'), ['project' => $project]);
     }
 
     public function update(UpdateProjectRequest $request, string $id)
     {
-        $project = Project::find($id);
+        $project = Project::findOrFail($id);
 
-        if (!$project) {
-            return $this->responseService->error(trans('messages.not_found'), [], 404);
-        }
-
-        // Check permission to update the project
-        if (!auth()->user()->can('update', $project)) {
+        if (!auth()->user()->can('update', $project)) 
             return $this->responseService->error(trans('messages.unauthorized'), [], 403);
-        }
+        
 
         $project->update($request->validated());
 
@@ -92,16 +78,14 @@ class ProjectController extends Controller
 
     public function destroy(string $id)
     {
-        $project = Project::find($id);
+        $project = Project::findOrFail($id);
 
-        if (!$project) {
-            return $this->responseService->error(trans('messages.not_found'), [], 404);
-        }
+        
 
         // Check permission to delete the project
-        if (!auth()->user()->can('delete', $project)) {
+        if (!auth()->user()->can('delete', $project)) 
             return $this->responseService->error(trans('messages.unauthorized'), [], 403);
-        }
+        
 
         $project->delete();
 
