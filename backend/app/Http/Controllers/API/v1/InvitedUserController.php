@@ -6,18 +6,39 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInvitedUserRequest;
 use Illuminate\Http\Request;
 use App\Models\InvitedUser;
-
-
+use App\Services\InvitationService;
+use App\Services\ResponseService;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\App;
+use Illuminate\Http\JsonResponse;
 
 class InvitedUserController extends Controller
 {
+    protected $invitationService;
+    protected $responseService;
+
+    public function __construct(InvitationService $invitationService, ResponseService $responseService)
+    {
+        $this->invitationService = $invitationService;
+        $this->responseService = $responseService;
+        $locale = request()->get('lang', 'en');
+        App::setLocale($locale);
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $invitations = InvitedUser::with(['invitable', 'inviter'])
+            ->where('invited_by', auth()->id())
+            ->latest()
+            ->paginate(10);
+
+        return $this->responseService->success(
+            trans('messages.retrieved'),
+            ['invitations' => $invitations]
+        );
     }
 
     /**
@@ -25,43 +46,24 @@ class InvitedUserController extends Controller
      */
     public function store(StoreInvitedUserRequest $request)
     {
-        // Get the authenticated user's ID
-        $userId = auth()->id();
-
-        // Generate a unique token for the invitation
-        $token = Str::random(32);
-
-        // Create the invited user record in the database
-        $invitation = InvitedUser::create([
-            'token' => $token,
+        $request->merge([
+            // Generate a unique token for the invitation
+            'token' => Str::random(32),
+            // Get the authenticated user's ID
+            'invited_by' => auth()->id(),
             'expires_at' => now()->addDays(8),
-            'user_email' => $request->user_email,
-            'invitable_id' => $request->invitable_id,
-            'invitable_type' => $request->invitable_type,
-            'invited_by' => $userId,
-            'status' => 'Pending',
         ]);
+
+        $invitation = InvitedUser::create($request->all());
 
         // Send an invitation email (optional)
         // Mail::to($request->user_email)->send(new InvitationMail($invitation)); 
 
-        return response()->json(['message' => 'Invitation created successfully', 'invitation' => $invitation], 201);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
+        return $this->responseService->success(
+            trans('messages.created'),
+            ['invitation' => $invitation],
+            201
+        );
     }
 
     /**
@@ -69,6 +71,24 @@ class InvitedUserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $invitation = InvitedUser::findOrFail($id);
+
+        // Check if user has permission to delete this invitation
+        if ($invitation->invited_by !== auth()->id()) {
+            return $this->responseService->error(
+                trans('messages.unauthorized'),
+                [],
+                403
+            );
+        }
+
+        $invitation->delete();
+
+        return $this->responseService->success(
+            trans('messages.deleted'),
+            []
+        );
     }
+
+    
 }
