@@ -55,10 +55,10 @@ class ProjectController extends Controller
 
     public function show(string $id)
     {
-        $project = Project::with(['teams', 'users', 'tasks', 'comments'])->find($id);
+        $project = Project::with(['teams', 'users', 'tasks', 'comments'])->findOrFail($id);
 
         if (!auth()->user()->can('view', $project)) 
-           // return $this->responseService->error(trans('messages.unauthorized'), [], 403);
+            return $this->responseService->error(trans('messages.unauthorized'), [], 403);
 
         return $this->responseService->success(trans('messages.retrieved'), ['project' => $project]);
     }
