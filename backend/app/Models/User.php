@@ -96,4 +96,9 @@ class User extends Authenticatable implements JWTSubject
                     return $this->belongsToMany(Team::class, 'user_teams', 'user_id', 'team_id')
                               ->withTimestamps();
           }
+
+          public function projects()
+          {
+                    return $this->hasMany(Project::class, 'created_by');
+          }
 }

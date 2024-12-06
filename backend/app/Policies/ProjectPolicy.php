@@ -44,12 +44,19 @@ class ProjectPolicy
     {
         return $this->roleService->isAdmin($user, $project);
     }
-
+    public function updateTask(User $user, Project $project)
+    {
+        return $this->roleService->isMember($user, $project);
+    }
     public function addTask(User $user, Project $project)
     {
         return $this->roleService->isAdminOrProjectManager($user, $project);
     }
-
+ 
+    public function deleteTask(User $user, Project $project)
+    {
+        return $this->roleService->isAdminOrProjectManager($user, $project);
+    }
     public function comment(User $user, Project $project)
     {
         return $this->roleService->isMember($user, $project);

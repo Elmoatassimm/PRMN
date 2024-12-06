@@ -14,7 +14,7 @@ class ResponseService
      * @param int $status
      * @return JsonResponse
      */
-    public function success(string $message = 'Operation Successful', array $data = [], int $status = 200): JsonResponse
+    public function success(string $message = 'Operation Successful',  $data = [], int $status = 200): JsonResponse
     {
         return response()->json([
             'status' => 'success',

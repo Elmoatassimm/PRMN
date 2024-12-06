@@ -2,53 +2,50 @@
 
 namespace App\Http\Controllers\API\v1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
+use App\Http\Requests\StoreTeamRequest;
 use App\Models\ProjectTeam;
 use App\Models\Team;
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\App;
+use App\Models\Project;
 
-
-class TeamController extends Controller
+class TeamController extends BaseController
 {
-    protected $responseService;
-
     public function __construct(ResponseService $responseService)
     {
-        $this->responseService = $responseService;
+        parent::__construct($responseService);
+        $locale = request()->get('lang', 'en');
+        App::setLocale($locale);
     }
 
-   
+    public function index(Request $request, Project $project)
+    {
+        if (!auth()->user()->can('view', $project)) 
+            return $this->error(trans('messages.unauthorized'), [], 403);
+
+        return $this->success(trans('messages.retrieved'), $project->teams);
+    }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-{
-    // Validate input
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'project_id' => 'required|exists:projects,id',
-         // Ensure user IDs are valid
-    ]);
+    public function store(StoreTeamRequest $request, Project $project)
+    {
+        if (!auth()->user()->can('manageUsers', $project)) 
+            return $this->error(trans('messages.unauthorized'), [], 403);
 
-    // Create team
-    $team = Team::create([
-        'name' => $validated['name'],
-        'created_by' => auth()->user()->id, // Use auth() helper
-    ]);
+        $team = Team::create([
+            'name' => $request->name,
+            'created_by' => auth()->id(),
+        ]);
 
-    // Associate the team with the project
-    ProjectTeam::create([
-        'project_id' => $validated['project_id'],
-        'team_id' => $team->id,
+        $project->teams()->attach($team->id);
 
-    ]);
-
-    return $this->responseService->success('Team created successfully', ['team' => $team], 201);
-}
-
+        return $this->success(trans('messages.created'), $team, 201);
+    }
 
     /**
      * Display the specified resource.
@@ -58,10 +55,10 @@ class TeamController extends Controller
         $team = Team::with(['users', 'projects', 'tasks', 'creator'])->find($id);
         
         if (!$team) {
-            return $this->responseService->notFound('Team not found');
+            return $this->error('Team not found', [], 404);
         }
 
-        return $this->responseService->success('Team retrieved successfully', ['team' => $team]);
+        return $this->success('Team retrieved successfully', ['team' => $team]);
     }
 
     /**
@@ -72,7 +69,7 @@ class TeamController extends Controller
         $team = Team::find($id);
 
         if (!$team) {
-            return $this->responseService->notFound('Team not found');
+            return $this->error('Team not found', [], 404);
         }
 
         $validated = $request->validate([
@@ -87,22 +84,19 @@ class TeamController extends Controller
             $team->users()->sync($request->user_ids);
         }
 
-        return $this->responseService->success('Team updated successfully', ['team' => $team]);
+        return $this->success('Team updated successfully', ['team' => $team]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Project $project, Team $team)
     {
-        $team = Team::find($id);
-
-        if (!$team) {
-            return $this->responseService->notFound('Team not found');
-        }
+        if (!auth()->user()->can('manageUsers', $project)) 
+            return $this->error(trans('messages.unauthorized'), [], 403);
 
         $team->delete();
 
-        return $this->responseService->success('Team deleted successfully');
+        return $this->success(trans('messages.deleted'));
     }
 }

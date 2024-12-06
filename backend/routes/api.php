@@ -20,9 +20,6 @@ Route::group([
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/refresh', [AuthController::class, 'refresh'])->name('refresh');
     Route::post('/me', [AuthController::class, 'me'])->name('me');
-    Route::apiResource('invitedusers', InvitedUserController::class);
-
-    Route::post('/assign-role', [AuthController::class, 'assignRoleToAuthUser'])->name('assign-role');
 });
 
 // Google authentication route
@@ -33,10 +30,29 @@ Route::group([
     'middleware' => ['api', 'auth:api'], // Authentication required
     'prefix' => 'v1'
 ], function () {
-    Route::apiResource('projects', ProjectController::class);
-    Route::apiResource('tasks', TaskController::class);
-    Route::apiResource('teams', TeamController::class);
+    // Invitation routes
+    Route::apiResource('invitations', InvitedUserController::class)->except(['update', 'show']);
+
+    // Nested Project Routes
+    Route::prefix('projects')->group(function () {
+        Route::middleware('can:view,project')->group(function () {
+            Route::apiResource('{project}/tasks', TaskController::class)
+                ->except(['show', 'store', 'update', 'destroy']);
+            Route::post('{project}/tasks', [TaskController::class, 'store'])
+                ->middleware('can:addTask,project');
+            Route::put('{project}/tasks/{task}', [TaskController::class, 'update'])
+                ->middleware('can:updateTask,project');
+            Route::delete('{project}/tasks/{task}', [TaskController::class, 'destroy'])
+                ->middleware('can:deleteTask,project');
+            Route::apiResource('{project}/teams', TeamController::class);
+        });
+    });
+
+    Route::apiResource('projects', ProjectController::class)->except(['show', 'update', 'destroy']);
+    Route::get('projects/{project}', [ProjectController::class, 'show'])->middleware('can:view,project');
+    Route::put('projects/{project}', [ProjectController::class, 'update'])->middleware('can:update,project');
+    Route::delete('projects/{project}', [ProjectController::class, 'destroy'])->middleware('can:delete,project');
+    
     Route::apiResource('taskteams', TeamTaskController::class);
     Route::get('tasks-user', [TaskController::class, 'getUserTeamTasks']);
 });
-
