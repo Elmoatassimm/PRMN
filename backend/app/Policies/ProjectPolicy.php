@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Team;
 use App\Services\ProjectRoleService;
 
 class ProjectPolicy
@@ -40,7 +41,7 @@ class ProjectPolicy
         return $this->roleService->isAdmin($user, $project);
     }
 
-    public function manageUsers(User $user, Project $project)
+    public function manageTeams(User $user, Project $project)
     {
         return $this->roleService->isAdmin($user, $project);
     }
@@ -60,5 +61,30 @@ class ProjectPolicy
     public function comment(User $user, Project $project)
     {
         return $this->roleService->isMember($user, $project);
+    }
+
+    /**
+     * Determine whether the user can add tasks to teams in the project.
+     *
+     * @param  \App\Models\User  $user
+     * @param  \App\Models\Team  $team
+     * @return bool
+     */
+    public function addTeamTasks(User $user, Team $team)
+    {
+        
+        return $this->roleService->isAdminOrProjectManager($user, $team->projects);
+    }
+
+    /**
+     * Determine whether the user can delete tasks from teams in the project.
+     *
+     * @param  \App\Models\User  $user
+     * @param  \App\Models\Project  $project
+     * @return bool
+     */
+    public function deleteTeamTasks(User $user, Project $project)
+    {
+        return $this->roleService->isAdminOrProjectManager($user, $project);
     }
 }
