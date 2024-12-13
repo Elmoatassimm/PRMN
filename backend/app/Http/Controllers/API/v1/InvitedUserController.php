@@ -4,20 +4,12 @@ namespace App\Http\Controllers\API\v1;
 
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\StoreInvitedUserRequest;
-use App\Models\InvitedUser;
+use App\Models\{InvitedUser, Project, Team};
 use App\Services\{InvitationService, ResponseService};
 use Illuminate\Support\Str;
 
 class InvitedUserController extends BaseController
 {
-    protected $invitationService;
-
-    public function __construct(InvitationService $invitationService, ResponseService $responseService)
-    {
-        
-        $this->invitationService = $invitationService;
-        
-    }
 
     /**
      * Display a listing of the resource.
@@ -26,8 +18,11 @@ class InvitedUserController extends BaseController
     {
         $invitations = InvitedUser::with(['invitable', 'inviter'])
             ->where('invited_by', auth()->id())
-            ->latest()
-            ->paginate(10);
+            ->latest()->get();
+
+            
+
+            
 
         return $this->success(trans('messages.retrieved'), $invitations);
     }
@@ -35,31 +30,46 @@ class InvitedUserController extends BaseController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreInvitedUserRequest $request)
+    public function store(StoreInvitedUserRequest $request, Project $project)
     {
-        $invitation = InvitedUser::create([
-            ...$request->validated(),
-            'token' => Str::random(32),
-            'invited_by' => auth()->id(),
-            'expires_at' => now()->addDays(8),
-        ]);
+    // Use destructuring to extract values from the request
+    $userEmail = $request->get('user_email');
+    $invitableType = $request->get('invitable_type');
+    $invitableId = $request->get('invitable_id');
 
-        // Send an invitation email (optional)
-        // Mail::to($request->user_email)->send(new InvitationMail($invitation)); 
+    // Get the invitable model (Project or Team) and avoid unnecessary database queries if invitable_type is invalid
+    $invitable = $invitableType::findOrFail($invitableId);
 
-        return $this->success(trans('messages.created'), $invitation, 201);
+    // Check if the user has the right to invite based on the project and team relationship
+    if ($invitableType === 'App\Models\Team' && !$project->teams()->where('teams.id', $invitableId)->exists()) {
+        return $this->error(trans('messages.unauthorized'), [], 403);
     }
+
+    // Create the invitation in a single call, ensuring only necessary data is passed
+    $invitationData = [
+        'user_email' => $userEmail,
+        'token' => Str::random(32),
+        'invited_by' => auth()->id(),
+        'expires_at' => now()->addDays(8),
+    ];
+    
+    // Create the invitation and return success response
+    $invitation = $invitable->invitedUsers()->create($invitationData);
+
+    // Optionally send an invitation email
+    // Mail::to($userEmail)->send(new InvitationMail($invitation));
+
+    return $this->success(trans('messages.created'), $invitation, 201);
+}
+
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(InvitedUser $invitedUser)
+    public function destroy(int $invitedUser )
     {
-        if ($invitedUser->invited_by !== auth()->id()) {
-            return $this->error(trans('messages.unauthorized'), [], 403);
-        }
-
-        $invitedUser->delete();
+        
+        InvitedUser::destroy($invitedUser);
 
         return $this->success(trans('messages.deleted'));
     }
