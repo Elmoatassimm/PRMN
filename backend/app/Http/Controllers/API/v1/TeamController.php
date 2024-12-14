@@ -4,99 +4,60 @@ namespace App\Http\Controllers\API\v1;
 
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\StoreTeamRequest;
-use App\Models\ProjectTeam;
-use App\Models\Team;
+use App\Models\{Team, Project, ProjectTeam};
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\App;
-use App\Models\Project;
 
 class TeamController extends BaseController
 {
-    public function __construct(ResponseService $responseService)
+    public function index(Project $project)
     {
-        parent::__construct($responseService);
-        $locale = request()->get('lang', 'en');
-        App::setLocale($locale);
+        return $this->success(
+            trans('messages.retrieved'), 
+            $project->teams()->with(['tasks', 'users'])->get()
+        );
     }
 
-    public function index(Request $request, Project $project)
-    {
-        if (!auth()->user()->can('view', $project)) 
-            return $this->error(trans('messages.unauthorized'), [], 403);
-
-        return $this->success(trans('messages.retrieved'), $project->teams);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreTeamRequest $request, Project $project)
     {
-        if (!auth()->user()->can('manageUsers', $project)) 
-            return $this->error(trans('messages.unauthorized'), [], 403);
-
-        $team = Team::create([
+        $team = $project->teams()->create([
             'name' => $request->name,
             'created_by' => auth()->id(),
         ]);
 
-        $project->teams()->attach($team->id);
+        ProjectTeam::create([
+            'project_id' => $project->id,
+            'team_id' => $team->id,
+        ]);
 
         return $this->success(trans('messages.created'), $team, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, Team $team, Project $project)
     {
-        $team = Team::with(['users', 'projects', 'tasks', 'creator'])->find($id);
+
         
-        if (!$team) {
-            return $this->error('Team not found', [], 404);
-        }
-
-        return $this->success('Team retrieved successfully', ['team' => $team]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        $team = Team::find($id);
-
-        if (!$team) {
-            return $this->error('Team not found', [], 404);
-        }
+        if (!$project->teams->contains($team->id)) 
+            return $this->error(trans('messages.not_found'), [], 404);
+        
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => ['required', 'string', 'max:255'],
         ]);
 
-        $team->update([
-            'name' => $validated['name']
-        ]);
-
-        if ($request->has('user_ids')) {
-            $team->users()->sync($request->user_ids);
-        }
-
-        return $this->success('Team updated successfully', ['team' => $team]);
+        $team->update($validated);
+        
+        return $this->success(trans('messages.updated'), $team);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Project $project, Team $team)
+    public function destroy( Team $team ,Project $project)
     {
-        if (!auth()->user()->can('manageUsers', $project)) 
-            return $this->error(trans('messages.unauthorized'), [], 403);
+        if (!$project->teams->contains($team->id)) {
+            return $this->error(trans('messages.not_found'), [], 404);
+        }
 
         $team->delete();
-
+        
         return $this->success(trans('messages.deleted'));
     }
 }

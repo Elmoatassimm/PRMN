@@ -2,92 +2,50 @@
 
 namespace App\Http\Controllers\API\v1;
 
-use App\Http\Controllers\Controller;
-use App\Models\TeamTask;
+use App\Http\Controllers\BaseController;
+use App\Models\{Team, Task, TeamTask};
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
 
-class TeamTaskController extends Controller
+class TeamTaskController extends BaseController
 {
-    protected $responseService;
+    
 
-    public function __construct(ResponseService $responseService)
+    public function store(Request $request, Team $team, Task $task)
     {
-        $this->responseService = $responseService;
-    }
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        $teamTasks = TeamTask::with(['team', 'task'])->get();
-        return $this->responseService->success('Team tasks retrieved successfully', ['teamTasks' => $teamTasks]);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'team_id' => 'required|exists:teams,id',
-            'task_id' => 'required|exists:tasks,id'
+        $request->validate([
+            'task_ids' => ['required', 'array'],
+            'task_ids.*' => ['exists:tasks,id']
         ]);
 
-        $teamTask = TeamTask::create($validated);
+        $existingTasks = $team->tasks()->whereIn('tasks.id', $request->task_ids)->pluck('tasks.id');
+        $newTaskIds = array_diff($request->task_ids, $existingTasks->toArray());
 
-        return $this->responseService->success('Team task created successfully', ['teamTask' => $teamTask], 201);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $teamTask = TeamTask::with(['team', 'task'])->find($id);
-
-        if (!$teamTask) {
-            return $this->responseService->notFound('Team task not found');
+        foreach ($newTaskIds as $taskId) {
+            TeamTask::create([
+                'team_id' => $team->id,
+                'task_id' => $taskId
+            ]);
         }
 
-        return $this->responseService->success('Team task retrieved successfully', ['teamTask' => $teamTask]);
+        return $this->success(
+            trans('messages.created'),
+            $team->load('tasks')
+        );
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy(Team $team, Task $task)
     {
-        $teamTask = TeamTask::find($id);
+        $teamTask = TeamTask::where('team_id', $team->id)
+            ->where('task_id', $task->id)
+            ->first();
 
         if (!$teamTask) {
-            return $this->responseService->notFound('Team task not found');
-        }
-
-        $validated = $request->validate([
-            'team_id' => 'sometimes|required|exists:teams,id',
-            'task_id' => 'sometimes|required|exists:tasks,id'
-        ]);
-
-        $teamTask->update($validated);
-
-        return $this->responseService->success('Team task updated successfully', ['teamTask' => $teamTask]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        $teamTask = TeamTask::find($id);
-
-        if (!$teamTask) {
-            return $this->responseService->notFound('Team task not found');
+            return $this->error(trans('messages.not_found'), [], 404);
         }
 
         $teamTask->delete();
 
-        return $this->responseService->success('Team task deleted successfully');
+        return $this->success(trans('messages.deleted'));
     }
 }

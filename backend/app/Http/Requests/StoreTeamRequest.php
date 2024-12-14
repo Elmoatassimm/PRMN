@@ -18,7 +18,7 @@ class StoreTeamRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'project_id' => 'required|exists:projects,id',
+            
             
         ];
     }
@@ -29,8 +29,7 @@ class StoreTeamRequest extends FormRequest
             'name.required' => trans('validation.required', ['attribute' => 'name']),
             'name.string' => trans('validation.string', ['attribute' => 'name']),
             'name.max' => trans('validation.max.string', ['attribute' => 'name', 'max' => 255]),
-            'project_id.required' => trans('validation.required', ['attribute' => 'project']),
-            'project_id.exists' => trans('validation.exists', ['attribute' => 'project']),
+        
         ];
     }
 }

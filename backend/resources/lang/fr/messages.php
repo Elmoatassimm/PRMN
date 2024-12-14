@@ -17,5 +17,6 @@ return [
     'retrieved' => 'récupéré avec succès',
     'updated' => 'mis à jour avec succès',
     'deleted' => 'supprimé avec succès',
-    'unauthorized' => 'Non autorisé',
+    'unauthorized' => 'Accès non autorisé',
+    'role_required' => 'Vous devez être un %s pour effectuer cette action.',
 ];

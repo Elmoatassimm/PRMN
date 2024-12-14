@@ -17,5 +17,8 @@ return [
     'retrieved' => 'retrieved successfully',
     'updated' => 'updated successfully',
     'deleted' => 'deleted successfully',
-    'unauthorized' => 'Unauthorized',
+    'unauthorized' => 'You are not authorized to perform this action.',
+    'insufficient_permissions' => 'Insufficient permissions. :required_role role is required.',
+    'unauthenticated' => 'Authentication is required to access this resource.',
+    'role_required' => 'You must be a %s to perform this action.',
 ];

@@ -13,12 +13,9 @@ class SubTaskFactory extends Factory
     public function definition()
     {
         return [
-            'title' => json_encode([
-                'en' => $this->faker->sentence,
-                'fr' => $this->faker->sentence,
-                'ar' => $this->faker->sentence,
-            ]),
-            'is_completed' => 0,
+            'title' => $this->faker->sentence,
+            'description' => $this->faker->optional()->sentence,
+            'status' => $this->faker->randomElement(['pending', 'in_progress', 'completed']),
             'task_id' => Task::factory(), // Assumes a TaskFactory exists
         ];
     }

@@ -19,7 +19,9 @@ class TaskController extends BaseController
 
     public function store(StoreTaskRequest $request, Project $project)
     {
-        $task = Task::create($request->validated());
+        $validatedData = $request->validated();
+        $validatedData['project_id'] = $project->id;
+        $task = Task::create($validatedData);
 
         if ($request->has('team_id')) {
             TeamTask::create([
@@ -31,13 +33,13 @@ class TaskController extends BaseController
         return $this->success(trans('messages.created'), $task, 201);
     }
 
-    public function update(UpdateTaskRequest $request, Project $project, Task $task)
+    public function update(UpdateTaskRequest $request, Task $task ,Project $project)
     {
         $task->update($request->validated());
         return $this->success(trans('messages.updated'), $task);
     }
 
-    public function destroy(Project $project, Task $task)
+    public function destroy( Task $task)
     {
         $task->delete();
         return $this->success(trans('messages.deleted'));

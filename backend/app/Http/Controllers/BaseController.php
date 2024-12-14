@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\App;
 use App\Models\Project;
+use Illuminate\Foundation\Exceptions\Handler;
 
 class BaseController extends Controller
 {

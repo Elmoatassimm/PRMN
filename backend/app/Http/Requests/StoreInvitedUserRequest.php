@@ -43,9 +43,8 @@ class StoreInvitedUserRequest extends FormRequest
             'expires_at.required' => 'An expiration date is required for the invitation.',
             'user_email.required' => 'An email address is required for the invited user.',
             'invitable_id.required' => 'An ID for the associated project or team is required.',
-            'invitable_type.required' => 'The type of entity (project or team) must be specified.',
-            'invited_by.required' => 'The inviter must be specified.',
-            'status.in' => 'Status must be either Pending, Accepted, or Rejected.',
+            'invitable_type.required' => 'The type of entity (project or team) must be specified.'
+            
         ];
     }
 }

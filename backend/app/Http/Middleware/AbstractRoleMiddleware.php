@@ -13,13 +13,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 abstract class AbstractRoleMiddleware
 {
-    protected $roleService;
-    protected $responseService;
+    protected ProjectRoleService $roleService;
+    protected ResponseService $responseService;
 
-    public function __construct(
-        ProjectRoleService $roleService, 
-        ResponseService $responseService
-    ) {
+    public function __construct(ProjectRoleService $roleService, ResponseService $responseService)
+    {
         $this->roleService = $roleService;
         $this->responseService = $responseService;
     }
@@ -34,10 +32,6 @@ abstract class AbstractRoleMiddleware
         
         // Find the project model
         $project = Project::findOrFail($projectId);
-
-        
-
-        
 
         // If project is found, add it to route parameters
         if ($project) {
@@ -69,14 +63,12 @@ abstract class AbstractRoleMiddleware
 
         // Validate user authentication
         if (!$user) {
-            return $this->unauthorized('auth.unauthenticated');
+            return $this->unauthorized();
         }
 
         // Check user role
         if (!$this->checkRole($user, $project)) {
-            return $this->unauthorized('roles.insufficient_permissions', [
-                'required_role' => $this->getRequiredRole()
-            ]);
+            return $this->unauthorized();
         }
 
         return $next($request);
@@ -88,20 +80,24 @@ abstract class AbstractRoleMiddleware
     protected function extractProjectId(Request $request): ?int
     {
         return 
-            $request->route('project') ?? 
-            $request->route('projects') ?? 
+            $request->route('project')?->id ?? 
+            $request->route('projects')?->id ?? 
             $request->input('project_id') ?? 
-            $request->header('X-Project-ID')??
-            $request->header('X-Project-Id')??null;
+            $request->header('X-Project-ID') ??
+            $request->header('X-Project-Id');
     }
 
     /**
      * Generate unauthorized response
      */
-    protected function unauthorized(string $translationKey, array $params = []): Response
+    protected function unauthorized(): Response
     {
+        if (!$this->responseService) {
+            $this->responseService = app(ResponseService::class);
+        }
+
         return $this->responseService->error(
-            __($translationKey), 
+            trans('messages.unauthorized'),
             [], 
             403
         );

@@ -1,5 +1,8 @@
 <?php
- 
+
+use App\Http\Middleware\{AbstractRoleMiddleware, TeamMemberMiddleware,AdminMiddleware,ProjectManagerMiddleware}; 
+
+
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +20,16 @@ return Application::configure(basePath: dirname(__DIR__))
         //
              // Optionally, exclude some routes from CSRF protection
              $middleware->validateCsrfTokens(except: [ 'api/*']);
+
+             $middleware->alias([
+                'abstract'=> AbstractRoleMiddleware::class,
+            'admin' => AdminMiddleware::class,
+            'project-manager' => ProjectManagerMiddleware::class,
+            'team-member' => TeamMemberMiddleware::class,
+        ]);
+            
+
+        
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (AuthenticationException $e, Request $request) {

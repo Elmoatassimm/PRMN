@@ -13,18 +13,11 @@ class TaskFactory extends Factory
     public function definition()
     {
         return [
-            'title' => json_encode([
-                'en' => $this->faker->sentence,
-                'fr' => $this->faker->sentence,
-                'ar' => $this->faker->sentence,
-            ]),
-            'description' => json_encode([
-                'en' => $this->faker->paragraph,
-                'fr' => $this->faker->paragraph,
-                'ar' => $this->faker->paragraph,
-            ]),
-            'due_date' => $this->faker->dateTimeBetween('now', '+1 month'),
-            'status' => $this->faker->randomElement(['pending', 'in_progress', 'completed']),
+            'title' => $this->faker->sentence,
+            'description' => $this->faker->paragraph,
+            'due_date' => $this->faker->dateTimeBetween('now', '+3 months'),
+            'priority' => $this->faker->randomElement(['low', 'medium', 'high', 'urgent']),
+            'status' => $this->faker->randomElement(['pending', 'in_progress', 'review', 'completed']),
             'project_id' => Project::factory(), // Assumes a ProjectFactory exists
         ];
     }

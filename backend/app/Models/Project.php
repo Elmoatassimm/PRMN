@@ -72,5 +72,13 @@ class Project extends Model
             ->withPivot('role_in_project');
     }
 
+    /**
+     * Get all invitations for this project.
+     */
+    public function invitedUsers()
+    {
+        return $this->morphMany(InvitedUser::class, 'invitable');
+    }
+
     
 }

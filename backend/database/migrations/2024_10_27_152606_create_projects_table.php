@@ -11,12 +11,8 @@ return new class extends Migration
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->json('description')->nullable();
-            $table->json('status')->default(json_encode([
-                'en' => 'Not Started',  // English
-                'fr' => 'Non Commencé', // French
-                'ar' => 'لم يبدأ بعد'   // Arabic
-            ]));
+            $table->string('description')->nullable();
+            $table->string('status')->default('not_started');
             $table->date('start_date');
             $table->date('end_date')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');

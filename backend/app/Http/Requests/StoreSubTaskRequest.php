@@ -11,7 +11,7 @@ class StoreSubTaskRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,23 @@ class StoreSubTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'title' => ['required', 'string', 'max:255'],
+            'is_completed' => ['boolean'],
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'title.required' => trans('validation.required', ['attribute' => 'title']),
+            'title.string' => trans('validation.string', ['attribute' => 'title']),
+            'title.max' => trans('validation.max.string', ['attribute' => 'title', 'max' => 255]),
+            'is_completed.boolean' => trans('validation.boolean', ['attribute' => 'completion status']),
         ];
     }
 }

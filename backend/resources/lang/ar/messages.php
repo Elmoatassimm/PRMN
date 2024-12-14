@@ -17,5 +17,9 @@ return [
     'retrieved' => 'تم استرجاع بنجاح',
     'updated' => 'تم تحديث بنجاح',
     'deleted' => 'تم حذف بنجاح',
-    'unauthorized' => 'غير مصرح',
+    'unauthorized' => 'وصول غير مصرح به',
+    'role_required' => 'يجب أن تكون %s للقيام بهذا الإجراء.',
+
+
+    
 ];

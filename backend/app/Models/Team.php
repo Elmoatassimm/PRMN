@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class Team extends Model
 {
@@ -22,7 +23,7 @@ class Team extends Model
      */
     public function users()
     {
-        return $this->belongsToMany(User::class, 'user_team')
+        return $this->belongsToMany(User::class, 'user_teams')
                     ->withTimestamps(); // If you want to track when users joined the team
     }
 
@@ -53,5 +54,17 @@ class Team extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the project associated with the team.
+     */
+
+    /**
+     * Get all invitations for this team.
+     */
+    public function invitedUsers()
+    {
+        return $this->morphMany(InvitedUser::class, 'invitable');
     }
 }
