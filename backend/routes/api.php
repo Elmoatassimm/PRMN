@@ -80,10 +80,12 @@ Route::group(['middleware' => ['api', 'auth:api'], 'prefix' => 'v1'], function (
       Route::delete('projects/{project}', [ProjectController::class, 'destroy']);
     
 
-    Route::middleware('admin')->post('projects', [ProjectController::class, 'store']);
+    Route::post('projects', [ProjectController::class, 'store']);
     // Invitation routes (Admin only)
     Route::middleware('admin')->group(function () {
         Route::post('invitations', [InvitedUserController::class, 'store']);
+        Route::get('invitations', [InvitedUserController::class, 'index']);
+
         Route::delete('invitations/{invitation}', [InvitedUserController::class, 'destroy']);
     });
 });

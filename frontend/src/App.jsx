@@ -2,7 +2,7 @@ import React from "react";
 import Routes from "./routes/routes";
 import { useTranslation } from "react-i18next";
 import { ThemeProvider } from "./provider/theme-provider";
-import store from "./redux/store"
+import store from "./features/store"
 import { Provider } from 'react-redux';
 
 
@@ -12,14 +12,14 @@ const App = () => {
 
   return (
 
-    <Provider store={store}>
+   // <Provider store={store}>
     
     <div className={`${isRTL ? "font-arabic" : "font-poppins"} font-medium`} dir={isRTL ? "rtl" : "ltr"}> {/* Set direction based on language */}
       <ThemeProvider>
         <Routes />
       </ThemeProvider>
     </div>
-    </Provider>
+   // </Provider>
     
   );
 };

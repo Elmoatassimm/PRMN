@@ -13,8 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 abstract class AbstractRoleMiddleware
 {
-    protected ProjectRoleService $roleService;
-    protected ResponseService $responseService;
+    protected  $roleService;
+    protected  $responseService;
 
     public function __construct(ProjectRoleService $roleService, ResponseService $responseService)
     {

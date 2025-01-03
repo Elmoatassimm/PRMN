@@ -1,13 +1,12 @@
 <?php
-
-use App\Http\Middleware\{AbstractRoleMiddleware, TeamMemberMiddleware,AdminMiddleware,ProjectManagerMiddleware}; 
-
-
+ 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
+use App\Http\Middleware\{AdminMiddleware,ProjectManagerMiddleware,TeamMemberMiddleware,AbstractRoleMiddleware};
+
  
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -17,19 +16,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+
+        $middleware->alias([
+            'admin'=> AdminMiddleware::class,
+            'team-member' => TeamMemberMiddleware::class,
+            'project-manager' => ProjectManagerMiddleware::class,
+            'abstract' => AbstractRoleMiddleware::class
+        ]
+        );
         //
              // Optionally, exclude some routes from CSRF protection
              $middleware->validateCsrfTokens(except: [ 'api/*']);
-
-             $middleware->alias([
-                'abstract'=> AbstractRoleMiddleware::class,
-            'admin' => AdminMiddleware::class,
-            'project-manager' => ProjectManagerMiddleware::class,
-            'team-member' => TeamMemberMiddleware::class,
-        ]);
-            
-
-        
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (AuthenticationException $e, Request $request) {

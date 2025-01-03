@@ -9,10 +9,7 @@ import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import PublicRoute from "./PublicRoute";
-import CreateProject from "../pages/CreateProject";
-import InviteProjectManager from "../components/InviteProjectmanager";
-import Dashboard from "../pages/Dashboard";
-import MemberDashboard from "../components/MemberDashboard";
+
 
 const Routes = () => {
   const { token } = useAuth(); // Get the token to check if the user is authenticated
@@ -25,16 +22,9 @@ const Routes = () => {
       children: [
         {
           path: "/",
-          element: <Dashboard />, // Set Dashboard as the default route
+          element: <h1>DAshboard</h1>, // Set Dashboard as the default route
         },
-        {
-          path: "/createProject",
-          element: <CreateProject />, // Home component for authenticated users
-        },
-        {
-          path: "/inviteProjectManager/:projectId",
-          element: <InviteProjectManager />, // Protected invite project manager route
-        },
+        
         {
           path: "/home",
           element: <Home />, // Alias for home
@@ -49,12 +39,9 @@ const Routes = () => {
         },
         {
           path: "/dashboard",
-          element: <Dashboard />,
+          element: <h1>DAshboard</h1>,
         },
-        {
-          path: "/team-member-dashboard",
-          element: <MemberDashboard />, // Using Dashboard component for team members for now
-        },
+        
       ],
     },
   ];

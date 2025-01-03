@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Project;
 use App\Models\User;
-use App\Services\ProjectRoleService;
+use App\Services\{ProjectRoleService,ResponseService};
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -12,11 +12,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class TeamMemberMiddleware extends AbstractRoleMiddleware
 {
-    protected $roleService;
+    protected  $roleService;
+    protected  $responseService;
 
-    public function __construct(ProjectRoleService $roleService)
+    public function __construct(ProjectRoleService $roleService, ResponseService $responseService)
     {
         $this->roleService = $roleService;
+        $this->responseService = $responseService;
     }
 
     protected function checkRole(User $user, ?Project $project): bool
